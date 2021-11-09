@@ -1,91 +1,84 @@
 #include"game.h"
 
+/* RAYLIB INCLUDES*/
 #include"raylib.h"
-#include"rlgl.h"
+#include"raymath.h"
 
 #include <stdio.h>
 
-// TODO Move all of the raylib init stuff to function shere
-void RunGame(s_game* game){
-    printf("Run game!");
+void GameInit(s_game* game) {
+    // Creates Raylib window for us to render our game in!
+    InitWindow(game->screen_width, game->screen_height, game->title);
 
-    // Initialization
-//--------------------------------------------------------------------------------------
-    const int screenWidth = 800;
-    const int screenHeight = 450;
+    game->camera.offset = (Vector2){ game->screen_width / 2.0f, game->screen_height / 2.0f };
+    game->camera.rotation = 0.0f;
+    game->camera.zoom = 1.0f;
 
-    InitWindow(screenWidth, screenHeight, "Fågel Jävel");
+    // Setup bird
+    const float scale = 0.25f;
+    game->bird.texture = LoadTexture(ASSETS_PATH"bird.png");
+    // Set filter for scaling
+    SetTextureFilter(game->bird.texture, TEXTURE_FILTER_BILINEAR);
 
-    Player player = { 0 };
-    player.position = (Vector2){ 400, 280 };
-    player.speed = 0;
-    player.canJump = false;
-    EnvItem envItems[] = {
-        {{ 0, 0, 1000, 400 }, 0, LIGHTGRAY },
-        {{ 0, 400, 1000, 200 }, 1, GRAY },
-        {{ 300, 200, 400, 10 }, 1, GRAY },
-        {{ 250, 300, 100, 10 }, 1, GRAY },
-        {{ 650, 300, 100, 10 }, 1, GRAY }
-    };
+    // Setup bird
+    game->bird.texture.width *= scale; game->bird.texture.height *= scale; // Scale the texture
+    game->bird.position = (Vector2){ 0.0f, 0.0f };
+    game->bird.rect = (Rectangle){ 0, 0, game->bird.texture.width, game->bird.texture.height };
+    game->bird.min_speed = 40.0f;
+    game->bird.max_speed = 80.0f;
+    UpdateBirdState(game, BIRD_FLYING);
 
-    int envItemsLength = sizeof(envItems) / sizeof(envItems[0]);
-
-    Camera2D camera = { 0 };
-    camera.target = player.position;
-    camera.offset = (Vector2){ screenWidth / 2.0f, screenHeight / 2.0f };
-    camera.rotation = 0.0f;
-    camera.zoom = 1.0f;
-
+    // Raylib function to limit FPS
     SetTargetFPS(60);
-    //--------------------------------------------------------------------------------------
+}
+
+int GameRun(s_game* game){
+    printf("Run game!");
 
     // Main game loop
     while (!WindowShouldClose())
     {
-        // Update
-        //----------------------------------------------------------------------------------
-        float deltaTime = GetFrameTime();
+        // Update stuff
+        float delta_time = GetFrameTime();
+        GameUpdate(game, delta_time);
 
-        // Update the player
-        UpdatePlayer(&player, envItems, envItemsLength, deltaTime);
-
-        // Call update camera function by its pointer
-        UpdateCameraCenterSmoothFollow(&camera, &player, envItems, envItemsLength, deltaTime, screenWidth, screenHeight);
-        //----------------------------------------------------------------------------------
-
-        // Draw
-        //----------------------------------------------------------------------------------
+        // Draw stuff
         BeginDrawing();
-
-        ClearBackground(LIGHTGRAY);
-
-        BeginMode2D(camera);
-
-        for (int i = 0; i < envItemsLength; i++) DrawRectangleRec(envItems[i].rect, envItems[i].color);
-
-        Rectangle playerRect = { player.position.x - 20, player.position.y - 40, 40, 40 };
-        DrawRectangleRec(playerRect, RED);
+        ClearBackground(SKYBLUE);
+        BeginMode2D(game->camera); // Begin 2D mode with custom camera
+ 
+        // DrawRectangleRec(playerRect, BLUE);
+        GameRender(game);
 
         EndMode2D();
-
         EndDrawing();
-        //----------------------------------------------------------------------------------
     }
 
     // De-Initialization
-    //--------------------------------------------------------------------------------------
-    CloseWindow();        // Close window and OpenGL context
-    //--------------------------------------------------------------------------------------
+    CloseWindow();  // Close window and OpenGL context
+    GameEnd(); // De-Init all the memory we have allocated ourselves
+    UnloadTexture(game->bird.texture);
 
     return 0;
 }
 
-void Update(int key)
+void GameUpdate(s_game* game, float delta_time)
 {
+    UpdateBird(game, delta_time);
+}
+
+void GameRender(s_game* game)
+{
+    // Render our game stuff
+    DrawTextureRec(game->bird.texture, game->bird.rect, game->bird.position, WHITE); // Draw bird
+    //DrawRectangleRec(game->bird.rect, RED);
+
+    //Vector2 middle = { game->screen_width / 2, game->screen_height / 2 };
+    //DrawLineEx(middle, Vector2Add(middle, Vector2Scale(game->bird.direction,10.0f)), 4.0f, RED);
 
 }
 
-void Render()
+void GameEnd()
 {
 
 }
