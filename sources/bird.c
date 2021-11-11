@@ -30,8 +30,10 @@ void UpdateBird(s_game* game, float delta_time)
 
 		break;
 	case BIRD_ABOUT_TO_SHIT:
-		//printf("THE BIRD IS NOW TAKING A CRAP!\n");
-		UpdateBirdState(game, BIRD_FLYING);
+		if(bird->state_timer >= 5.0f){
+			//TODO: Make the crap
+			UpdateBirdState(game, BIRD_FLYING);
+		}
 		break;
 	case BIRD_JUST_SHAT:
 		break;
@@ -43,11 +45,10 @@ void CheckBirdCollision(s_game* game)
 	s_bird* bird = &game->bird;
 	int sw = game->screen_width; int sh = game->screen_height;
 
-	printf("X: %.1f\n", bird->position.x);
+	//printf("X: %.1f\n", bird->position.x);
 	// X
 	if (bird->position.x < 0 
 		|| bird->position.x > sw - bird->rect.width) {
-		printf("FLIP X");
 		bird->direction.x *= -1;
 	}
 	// Y

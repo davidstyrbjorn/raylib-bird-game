@@ -1,5 +1,5 @@
-#ifndef BIRD
-#define BIRD
+#ifndef BIRD_H
+#define BIRD_H
 
 #include"raylib.h"
 
@@ -27,4 +27,4 @@ void UpdateBird(s_game* game, float delta_time);
 void CheckBirdCollision(s_game* game);
 void UpdateBirdState(s_game* game, BIRD_STATES new_state);
 
-#endif BIRD
+#endif 

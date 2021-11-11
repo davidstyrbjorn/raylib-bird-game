@@ -5,4 +5,6 @@
 float GetRandomFloat();
 float LinearInterpolate(float t, float a, float b);
 
+void DrawCoordinateAxis();
+
 #endif
